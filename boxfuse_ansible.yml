@@ -11,6 +11,7 @@
         - python3-pip
         - docker.io
         - maven
+        - git
       state: present
       update_cache: true
 
@@ -27,7 +28,6 @@
     - name: Synchronize project folder on build host with webapps folder on prod host
       synchronize:
         mode: pull
-        dirs: no
         src: /tmp/boxfuse/target/hello-1.0.war
         dest: /var/lib/tomcat9/webapps/
       delegate_to: prod
