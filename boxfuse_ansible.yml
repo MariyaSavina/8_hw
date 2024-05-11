@@ -1,8 +1,8 @@
 - hosts: build
   tasks:
    - name: Update the System Packages
-    apt:
-      update_cache: yes
+     apt:
+       update_cache: yes
 
   - name: Install git
     apt:
