@@ -1,18 +1,19 @@
 - hosts: build
   tasks:
-    - name: Install required packages
-      become: true
-      apt:
-        name: "{{item}}"
-        state: present
-      with_items:
-        - default-jdk
-        - python3-pip
-        - docker.io
-        - git
-        - maven
+   - name: Update the System Packages
+    apt:
+      update_cache: yes
+
+  - name: Install git
+    apt:
+      name: git
       state: present
-      update_cache: true
+
+  - name: Install maven
+    apt:
+      name: maven
+      state: present
+      update_cache: yes
 
     - name: Download project
       git:
