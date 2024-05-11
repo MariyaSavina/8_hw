@@ -1,45 +1,5 @@
-- hosts: build
+- hosts: prod
   tasks:
-   - name: Update the System Packages
-     apt:
-       update_cache: yes
-
-  - name: Install git
-    apt:
-      name: git
-      state: present
-
-  - name: Install maven
-    apt:
-      name: maven
-      state: present
-      update_cache: yes
-
-    - name: Download project
-      git:
-        repo: https://github.com/boxfuse/boxfuse-sample-java-war-hello.git
-        dest: /tmp
-
-    - name: Run mvn clean in boxfuse folder
-      shell:
-        cmd: mvn clean package
-        chdir: /tmp/boxfuse
-
-    - name: Synchronize project folder on build host with webapps folder on prod host
-      synchronize:
-        mode: pull
-        dirs: no
-        src: /tmp/boxfuse/target/hello-1.0.war
-        dest: /var/lib/tomcat9/webapps/
-      delegate_to: prod
-
-- name: deploy war on tomcat
-
-  hosts: prod
-  become: yes
-
-  tasks:
-
     - name: Update packages
       apt:
         update_cache: yes
@@ -49,12 +9,47 @@
         name: tomcat9
         state: present
 
-    - name: Copy hello-1.0.war to tomcat webapps folder
-      copy: 
-          src: hello-1.0.war
-          dest: /var/lib/tomcat9/webapps/hello-1.0.war
+- hosts: build
+  tasks:
+    - name: Update packages
+      apt:
+        update_cache: yes
 
-    - name: Ensure tomcat9 service is started
+    - name: Install git
+      apt:
+        name: git
+        state: present
+
+    - name: Install maven
+      apt:
+        name: maven
+        state: present
+
+    - name: Download project
+      git:
+        repo: https://github.com/boxfuse/boxfuse-sample-java-war-hello.git
+        dest: /tmp/boxfuse
+
+    - name: Run mvn clean in boxfuse folder
+      shell:
+        cmd: mvn clean package
+        chdir: /tmp/boxfuse
+
+    - name: Synchronize project folder on build host with webapps folder on prod host
+      synchronize:
+        mode: pull
+        src: /tmp/boxfuse/target/hello-1.0.war
+        dest: /var/lib/tomcat9/webapps/
+      delegate_to: "{{ groups['prod'][0] }}"
+
+- name: Deploy hello-1.0.war on tomcat
+
+  hosts: prod
+  become: yes
+
+  tasks:
+
+    - name: Ensure tomcat is started
       service:
         name: tomcat9
         state: started
